@@ -4,7 +4,7 @@ const webpack = require('webpack');
 
 module.exports = {
   mode:'development',
-  entry: './src/deps.js',
+  entry: './src/index.ts',
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js',
@@ -12,14 +12,19 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.m?js$/,
+        test: /\.[tj]s$/,
         exclude: /node_modules/,
-        use: {
-          loader: "babel-loader",
-          options: {
-            presets: ['@babel/preset-env']
+        use: [ 
+          {
+            loader:'babel-loader',
+            options: {
+              presets: ['@babel/preset-env']
+            }
+          },
+          {
+            loader:'ts-loader'
           }
-        }
+        ]
       }
     ]
   },

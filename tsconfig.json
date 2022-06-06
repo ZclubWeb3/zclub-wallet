@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+      "lib": ["ES5", "ES6", "ESNext", "DOM", "DOM.Iterable"],
+      "target": "esnext",
+      "module": "esnext",
+      "moduleResolution": "node",
+      "importHelpers": true,
+      "esModuleInterop": true,
+      "strict": true,
+      "allowJs": true,
+      "checkJs": false,
+      "noImplicitAny": false,
+      "noEmit": false,
+      "allowSyntheticDefaultImports": true,
+      "forceConsistentCasingInFileNames": true,
+      "skipLibCheck": true,
+      "outDir": "./dist/",
+    },
+    "include": ["src/**/*", "typings.d.ts"],
+    "exclude": ["node_modules", "**/*.spec.ts"]
+  }

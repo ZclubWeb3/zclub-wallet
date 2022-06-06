@@ -1,4 +1,4 @@
-# wallet
+# zclub wallet
 
 This project is used for mobile hybrid solana wallet development, providing functions such as account creation, account import, transfer, swap, etc.
 
