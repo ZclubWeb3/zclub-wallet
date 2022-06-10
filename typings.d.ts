@@ -7,6 +7,8 @@ interface Window {
     decimal:Record<string,any>;
     orca:Record<string,any>;
     web3:Record<string,any>;
+    solanaWeb3:Record<string,any>;
+    connection:Record<string,any>;
     callMobileMethod:(method:string,data:Record<string,any>)=>{};
     createdMnemonic:()=>{
         mnemonics: string;
@@ -24,5 +26,7 @@ interface Window {
     initWallet:(privateKey: any, urls: any)=> void;
     swap:(type: any, dir: string | undefined, money: any)=> Promise<void>;
     getAllToken:(address: string)=> Promise<{}>;
+    getTokenBalance:() =>  Promise<{}>;
+    getSolBalance:() => Promise<{}>;
 }
 
