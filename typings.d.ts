@@ -9,6 +9,7 @@ interface Window {
     web3:Record<string,any>;
     solanaWeb3:Record<string,any>;
     connection:Record<string,any>;
+    owner:any;
     callMobileMethod:(method:string,data:Record<string,any>)=>{};
     createdMnemonic:()=>{
         mnemonics: string;
