@@ -70,11 +70,17 @@ This project is used for mobile hybrid solana wallet development, providing func
 - transfer
   > Submits a signed transaction to the cluster for processing.
 
+  - params:
+    - type: 'SOL'|'AUT'|'AHT'|'XNFT'
+    - amount supply for 'SOL'|'AUT'|'AHT'
+    - toAddress transfer to address
+    - nftId optional when type is 'XNFT' need this
+
   ```js
     let payer = solanaWeb3.Keypair.generate();
     const privateKey = bs58.encode(payer.secretKey);
     initWallet(privateKey);
-    const res = await transfer({toAddress:"5rPGcn5dNGJ88oSxdkNWwwe8TR3pmUQkfWCrnAXUGRRs",type:'0',amount:0.1})
+    const res = await transfer(JSON.stringify{toAddress:"5rPGcn5dNGJ88oSxdkNWwwe8TR3pmUQkfWCrnAXUGRRs",type:'SOL',amount:0.1})
     console.log(res)
     /*
     { 
@@ -93,6 +99,20 @@ This project is used for mobile hybrid solana wallet development, providing func
         amount:0.1
     }
     let ins = createdInstruction(data);
+  ```
+
+- getTokenBalance
+  > Get all token information of the current user
+
+  ```js
+    let info = await getTokenBalance();
+  ```
+
+- getSolBalance
+  > Get sol amount of the current user
+
+  ```js
+    let amount = await getSolBalance();
   ```
 
 - swap

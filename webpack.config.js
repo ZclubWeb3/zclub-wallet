@@ -18,7 +18,7 @@ module.exports = {
           {
             loader:'babel-loader',
             options: {
-              presets: ['@babel/preset-env']
+              presets: ['@babel/preset-env'],
             }
           },
           {
@@ -29,7 +29,7 @@ module.exports = {
     ]
   },
   plugins: [
-      new HtmlWebpackPlugin({ template: './index.html' ,inject: 'head',scriptLoading: 'blocking'}),
+      new HtmlWebpackPlugin({ template: './index.html' ,inject: 'body',scriptLoading: 'blocking'}),
       new webpack.DefinePlugin({
         'process.env.NODE_DEBUG': false,
       }),

@@ -1,11 +1,26 @@
 import bs58 from "bs58";
-import bip39 from "bip39";
+import * as bip39 from "bip39";
 import nacl from "tweetnacl";
-import ed25519 from "ed25519-hd-key";
-import solanaWeb3 from "@solana/web3.js";
-import splToken from "@solana/spl-token";
+import * as ed25519 from "ed25519-hd-key";
+import * as solanaWeb3 from "@solana/web3.js";
+import * as splToken from "@solana/spl-token";
 import Decimal from "decimal.js";
+import { SOL, NFT, SPL} from '@zclubweb3/zclub-solana';
 import { getOrca, Network, OrcaPoolConfig } from "@orca-so/sdk";
+
+interface ItransferData { 
+  type: string; // SOL|AHT|AUT|XNFT
+  toAddress: string;
+  amount?: string|number|bigint;
+  nftId?: string;
+  tokenId?: string;
+}
+
+const TOKENINFO = {
+  "AHT":"",
+  "AUT":"",
+}
+
 
 export const web3 = solanaWeb3;
 
@@ -49,7 +64,7 @@ export function createdMnemonic() {
  *
  * @param mnemonic mnemonic string
  */
-export function createdAccount(mnemonic) {
+export function createdAccount(mnemonic: string) {
   // First get the seed according to the mnemonic
   const seed = bip39.mnemonicToSeedSync(mnemonic);
   const derivedSeed = ed25519.derivePath(derivePath, seed.toString("hex")).key;
@@ -74,7 +89,7 @@ export function createdAccount(mnemonic) {
  * @desc Create account from key   There will be no mnemonic when importing an account through a private_key
  * @param privateKey   string after base58
  */
-export function importAccount(privateKey) {
+export function importAccount(privateKey:string) {
   const privateBuffer = bs58.decode(privateKey);
   const account = new web3.Account(privateBuffer);
 
@@ -102,7 +117,7 @@ let connection = new web3.Connection(
   "singleGossip"
 );
 let owner;
-export function initWallet(privateKey, urls) {
+export function initWallet(privateKey:string, urls:string) {
   if (urls) {
     connection = new web3.Connection(urls, "singleGossip");
   }
@@ -119,7 +134,7 @@ export function initWallet(privateKey, urls) {
  * @param address wallet account address
  * @param data Data that needs to be signed
  **/
-async function sign(privateKey, address, data) {
+async function sign(privateKey:string, address:string, data) {
   const secretKey = bs58.decode(privateKey);
   const publicKey = new web3.PublicKey(address);
   let recentBlockhash = await connection.getRecentBlockhash();
@@ -144,12 +159,12 @@ async function sign(privateKey, address, data) {
  * @return
  * success { transaction: "2BndzajSdrUtVHo1rUM9FHMBhXKuQzezJtrWindUVHUbBD81ehFw9wLf1LnxSQ7MQio6H5jnGVGkn2wHrMcEW5tt" }
  * */
-export async function transfer(transferJsonStr) {
+export async function transfer(transferJsonStr:string) {
   try {
     let data = JSON.parse(transferJsonStr);
     console.log("transfer to " + data["toAddress"]);
 
-    let res = handleMultTransfer(data);
+    let res =await handleMultTransfer(data);
 
     let json_data = {
       transaction: res,
@@ -165,10 +180,15 @@ export async function transfer(transferJsonStr) {
   }
 }
 
-async function handleMultTransfer(data) {
+/**
+ * @desc Process different types of transactions
+ * @param data 
+ * @returns 
+ */
+async function handleMultTransfer(data:ItransferData) {
   let res;
   switch (data.type) {
-    case "0":
+    case "SOL":
       // sol forward to an address
       /*
                 {
@@ -179,18 +199,33 @@ async function handleMultTransfer(data) {
             */
       res = await solTransfer(data);
       return res;
-    case "1":
-      // other token to an address
+    case "XNFT":
+      // nft to an address
       /*
                 {
                     type:'1',
+                    toAddress: '',// to wallet address
+                    ntfId: '', // ntf address
+                    amount: 100 // number
+                }
+            */
+      res = await nftTransfer(data);
+      return res;
+    case "AUT":
+    case "AHT":
+      // spl token to an address
+      /*
+                {
+                    type:'2',
                     toAddress: '',// to wallet address
                     tokenId: '', // token address
                     amount: 100 // number
                 }
             */
-      res = await tokenTransfer(data);
+      res = await splTransfer(data);
       return res;
+    default:
+      throw new Error("not match transfer type")
   }
 }
 
@@ -199,29 +234,56 @@ async function handleMultTransfer(data) {
  * @desc  sol transfer
  * for transfer
  * **/
-async function solTransfer(data) {
-  let instruction = web3.SystemProgram.transfer({
-    fromPubkey: owner.publicKey,
-    toPubkey: new web3.PublicKey(data.toAddress),
-    lamports: new Decimal(data.amount).mul(web3.LAMPORTS_PER_SOL).toNumber(),
-  });
-  let payer = owner;
-  let privateKey = bs58.encode(payer.secretKey);
-  let address = payer.publicKey.toBase58();
-  const rawTransaction = await sign(privateKey, address, instruction);
-  let res = await web3.sendAndConfirmRawTransaction(connection, rawTransaction);
-
-  return res;
+async function solTransfer(data:ItransferData) {
+  const encodedTx = await SOL.transfer(
+    connection,
+    owner,
+    owner,
+    new web3.PublicKey(data.toAddress),
+    new Decimal(data.amount as string).mul(web3.LAMPORTS_PER_SOL).toNumber(),
+  );
+  const signature = await connection.sendEncodedTransaction(encodedTx);
+  const res = await connection.confirmTransaction(signature);
+  if(!res.value.err){
+    return signature
+  }else{
+    throw new Error(res.value.err as string)
+  }
 }
 
-async function tokenTransfer(data) {
-    const {  getOrCreateAssociatedTokenAccount } = splToken;
-    const fromTokenAccount = await getOrCreateAssociatedTokenAccount(
-        connection,
-        owner,
-        data.token,
-        owner.publicKey
-    );
+async function nftTransfer(data:ItransferData) {
+  const encodedTx = await NFT.transfer(
+    connection,
+    owner,
+    owner,
+    new web3.PublicKey(data.nftId as string),
+    new web3.PublicKey(data.toAddress),
+  );
+  const signature = await connection.sendEncodedTransaction(encodedTx);
+  const res = await connection.confirmTransaction(signature);
+  if(!res.value.err){
+    return signature
+  }else{
+    throw new Error(res.value.err as string)
+  }
+}
+
+async function splTransfer(data:ItransferData){
+  const encodedTx = await SPL.transfer(
+    connection,
+    owner,
+    owner,
+    new web3.PublicKey(TOKENINFO[data.type]||data.tokenId),
+    new web3.PublicKey(data.toAddress),
+    BigInt(new Decimal(data.amount as string).mul(web3.LAMPORTS_PER_SOL).toNumber()),
+  );
+  const signature = await connection.sendEncodedTransaction(encodedTx);
+  const res = await connection.confirmTransaction(signature);
+  if(!res.value.err){
+    return signature
+  }else{
+    throw new Error(res.value.err as string)
+  }
 }
 
 const poolInfo = {
@@ -545,7 +607,6 @@ export async function getAllToken(address: string) {
       programId: TOKEN_PROGRAM_ID,
     }
   );
-
   const tokenInfo = {};
   tokenAccounts.value.forEach((e) => {
     const accountInfo = AccountLayout.decode(e.account.data);
@@ -555,7 +616,39 @@ export async function getAllToken(address: string) {
   return tokenInfo;
 }
 
+/***
+ * @getTokenBalance
+ *
+ * @description Get all token information of the current user
+ */
+export async function getTokenBalance(){
+  const allInfo = await SPL.getAllTokenBalance(
+    connection,
+    owner.publicKey,
+  );
+  const json_data = allInfo;
+  callMobileMethod("onGetTokenBalance", json_data);
+  return allInfo;
+}
+
+/***
+ * @getTokenBalance
+ *
+ * @description Get sol amount of the current user
+ */
+export async function getSolBalance(){
+  const balance = await SOL.getBalance(connection, owner.publicKey);
+  const json_data = {
+    SOL:new Decimal(balance.toString()).div(web3.LAMPORTS_PER_SOL).toNumber()
+  }
+  callMobileMethod("onGetSolBalance", json_data);
+  return balance;
+}
+
 window.web3 = web3;
+window.solanaWeb3 = web3;
+window.bs58 = bs58;
+window.connection = connection;
 window.createdMnemonic = createdMnemonic;
 window.createdAccount = createdAccount;
 window.importAccount = importAccount;
@@ -563,6 +656,8 @@ window.transfer = transfer;
 window.initWallet = initWallet;
 window.swap = swap;
 window.getAllToken = getAllToken;
+window.getTokenBalance = getTokenBalance;
+window.getSolBalance = getSolBalance;
 
 /**
  *

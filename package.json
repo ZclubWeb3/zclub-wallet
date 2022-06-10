@@ -3,13 +3,13 @@
     "build": "webpack build --config ./webpack.config.js"
   },
   "dependencies": {
-    "@babel/core": "^7.17.12",
+    "@babel/core": "^7.18.2",
     "@babel/preset-env": "^7.17.12",
     "@orca-so/sdk": "^1.2.24",
     "@solana/spl-token": "^0.2.0",
     "@solana/web3.js": "^1.42.0",
+    "@zclubweb3/zclub-solana": "^1.1.1",
     "assert": "^2.0.0",
-    "babel": "^6.23.0",
     "babel-loader": "^8.2.5",
     "bip39": "^3.0.4",
     "bs58": "^5.0.0",
