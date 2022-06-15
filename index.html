@@ -26,14 +26,18 @@
               if (isAndroid) {
                   // android platform
                   window.MobileJsBridge.postMessage(JSON.stringify(json_msg));
-              } else {
+              } else if (typeof window.webkit !== "undefined") {
                   // iOS platform
-                  window.webkit.messageHandlers.MobileJsBridge.postMessage(JSON.stringify(json_msg));
+                  window.webkit.messageHandlers.MobileJsBridge.postMessage(json_msg);
+              } else {
+                // other platform
+                console.log('Runs on non-mobile platforms:', window.navigator.userAgent)
               }
           } catch (e) {
-              console.log('callMobileMethod bridge error: ' + e);
+              console.log('callMobileMethod bridge error: ' , e);
           }
       }
     </script>
+    <!-- <script src="./web3.js"></script> -->
   </body>
 </html>
