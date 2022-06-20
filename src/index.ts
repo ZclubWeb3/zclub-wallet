@@ -7,6 +7,7 @@ import * as splToken from "@solana/spl-token";
 import Decimal from "decimal.js";
 import { SOL, NFT, SPL} from '@zclubweb3/zclub-solana';
 import { getOrca, Network, OrcaPoolConfig } from "@orca-so/sdk";
+import type { Cluster } from '@solana/web3.js';
 
 interface ItransferData { 
   type: string; // SOL|AHT|AUT|XNFT
@@ -14,6 +15,7 @@ interface ItransferData {
   amount?: string|number|bigint;
   nftId?: string;
   tokenId?: string;
+  dir?: string; // in,out default out
 }
 
 const TOKENINFO = {
@@ -123,7 +125,11 @@ export function initWallet(privateKey:string, urls:string) {
   }
   const secretKey = bs58.decode(privateKey);
   owner = web3.Keypair.fromSecretKey(secretKey);
-  console.log("initWallet success");
+  connection.onAccountChange(owner.publicKey,(...args)=>{
+    console.log('owner info change',args);
+    callMobileMethod('onOwnerInfoChange',{});
+  })
+  console.log("initWallet success",owner);
   callMobileMethod("onInitWallet", {});
 }
 
@@ -166,9 +172,16 @@ export async function transfer(transferJsonStr:string) {
 
     let res =await handleMultTransfer(data);
 
-    let json_data = {
-      transaction: res,
-    };
+    let json_data;
+    if(data.dir =='in'){
+      json_data = {
+        encodedTx: res
+      }
+    }else {
+      json_data = {
+        transaction: res
+      }
+    }
     callMobileMethod("onTransfer", json_data);
     console.log("transfer", json_data);
     return json_data;
@@ -242,6 +255,9 @@ async function solTransfer(data:ItransferData) {
     new web3.PublicKey(data.toAddress),
     new Decimal(data.amount as string).mul(web3.LAMPORTS_PER_SOL).toNumber(),
   );
+  if(data.dir=='in'){
+    return encodedTx;
+  }
   const signature = await connection.sendEncodedTransaction(encodedTx);
   const res = await connection.confirmTransaction(signature);
   if(!res.value.err){
@@ -259,6 +275,9 @@ async function nftTransfer(data:ItransferData) {
     new web3.PublicKey(data.nftId as string),
     new web3.PublicKey(data.toAddress),
   );
+  if(data.dir=='in'){
+    return encodedTx;
+  }
   const signature = await connection.sendEncodedTransaction(encodedTx);
   const res = await connection.confirmTransaction(signature);
   if(!res.value.err){
@@ -277,6 +296,9 @@ async function splTransfer(data:ItransferData){
     new web3.PublicKey(data.toAddress),
     BigInt(new Decimal(data.amount as string).mul(web3.LAMPORTS_PER_SOL).toNumber()),
   );
+  if(data.dir=='in'){
+    return encodedTx;
+  }
   const signature = await connection.sendEncodedTransaction(encodedTx);
   const res = await connection.confirmTransaction(signature);
   if(!res.value.err){
@@ -658,7 +680,6 @@ window.swap = swap;
 window.getAllToken = getAllToken;
 window.getTokenBalance = getTokenBalance;
 window.getSolBalance = getSolBalance;
-
 /**
  *
  * web3.PublicKe Convert address string to raw format

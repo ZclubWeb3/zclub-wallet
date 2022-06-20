@@ -75,6 +75,7 @@ This project is used for mobile hybrid solana wallet development, providing func
     - amount supply for 'SOL'|'AUT'|'AHT'
     - toAddress transfer to address
     - nftId optional when type is 'XNFT' need this
+    - dir direction 'in'|'out'  'in' return Signature data, 'out' return transaction
 
   ```js
     let payer = solanaWeb3.Keypair.generate();
@@ -85,6 +86,13 @@ This project is used for mobile hybrid solana wallet development, providing func
     /*
     { 
         transaction: "2BndzajSdrUtVHo1rUM9FHMBhXKuQzezJtrWindUVHUbBD81ehFw9wLf1LnxSQ7MQio6H5jnGVGkn2wHrMcEW5tt" 
+    }
+    */
+    const res = await transfer(JSON.stringify({toAddress:"5rPGcn5dNGJ88oSxdkNWwwe8TR3pmUQkfWCrnAXUGRRs",type:'SOL',amount:0.1,dir:'in')})
+    console.log(res)
+    /*
+    { 
+        encodedTx: "2BndzajSdrUtVHo1rUM9FHMBhXKuQzezJtrWindUVHUbBD81ehFw9wLf1LnxSQ7MQio6H5jnGVGkn2wHrMcEW5tt" 
     }
     */
   ```
