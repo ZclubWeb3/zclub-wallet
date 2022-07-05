@@ -20,6 +20,22 @@ This project is used for mobile hybrid solana wallet development, providing func
     */
   ```
 
+- getMnemonicWordList
+  > return mnemonic word list
+
+  ```js
+    let list = getMnemonicWordList();
+    console.log(list);
+    /*
+    {
+      mnemonics_word_list:[
+        'abandon',
+        ...
+      ]
+    }
+    */
+  ```
+
 - createdAccount
   > Generate account by mnemonic
 
@@ -128,6 +144,91 @@ This project is used for mobile hybrid solana wallet development, providing func
 
 - getFee
   > orca fee
+
 - getPrice
   > orca exchange price
+
+- getCoinList
+  > get owner all token info
+
+  ```js
+    const info = await getCoinList();
+    console.log(info)
+    /*
+      {
+        "coins": [
+          {
+            "name": "SOL",
+            "asset": 0.123,
+            "token_address": "xxxx",
+            "icon": "",
+            "fee": 0.0000005
+          },
+        ],
+        "nft": [
+          {
+            "name": "AUT",
+            "asset": 0.123,
+            "token_address": "xxxx",
+            "icon": "",
+            "fee": 0.0000005
+          }
+        ]
+      }
+    */
+  ```
+
+- getBalance
+  > get owner query token info
+
+  - params:
+    - name  token_address
+    - token_address token address
+  
+  ```js
+    const info = await getBalance('SOL');
+    console.log(info);
+    /*
+      {
+          "name": "SOL",
+          "asset": 0.123,
+          "token_address": "xxxx",
+          "icon": "",
+          "fee": 0.0000005
+        }
+    */
+  ```
+
+- signTransferToSpending
+  > signature transfer with wallet to spending address
+
+  - params:
+    - assetName 'SOL'|'AUT'|'AHT'|'XNFT'
+    - token_address assetName token address
+    - amount
+
+  ```js
+    let sign = await signTransferToSpending('SOL','',1);
+    console.log(sign);
+    /*
+      {
+        name: 'SOL',
+        token_address: '00001',
+        transaction_sign: '2BndzajSdrUtVHo1rUM9FHMBhXKuQzezJtrWindUVHUbBD81ehFw9wLf1LnxSQ7MQio6H5jnGVGkn2wHrMcEW5tt',
+      }
+    */
+  ```
+
+- transferToCoin
+  > transfer token to address
+
+  - params:
+    - coinName token name like 'SOL'|'AUT'|'AHT'|'xNFT'
+    - token_address token address
+    - wallet_address wallet address which transfer to
+    - amount number of token to transfer
+  
+  ```js
+    let res = await transferToCoin('SOL','','8PwgbEKKfouzXTSXMS31eYz1tZtGobCgbdJrjUVDt4KQ',1);
+  ```
   
