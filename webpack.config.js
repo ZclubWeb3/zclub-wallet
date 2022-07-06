@@ -39,15 +39,15 @@ module.exports = {
       new webpack.ProvidePlugin({
         Buffer: ['buffer', 'Buffer'],
       }),
+      new webpack.IgnorePlugin({
+        checkResource(resource) {
+          return /.*\/wordlists\/(?!english).*\.json/.test(resource)
+        }
+      }),
       // new CopyPlugin({
       //   patterns: [
       //     { from: path.resolve(__dirname,'node_modules/@solana/web3.js/lib/index.iife.js'), to: path.resolve(__dirname,'dist/web3.js') },
       //   ],
-      // }),
-      // new webpack.IgnorePlugin({
-      //   checkResource(resource) {
-      //     return /.*\/wordlists\/(?!english).*\.json/.test(resource)
-      //   }
       // }),
     ],
   resolve:{
