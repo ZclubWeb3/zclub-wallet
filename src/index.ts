@@ -356,9 +356,9 @@ async function solTransfer(data: ItransferData) {
     new Decimal(data.amount as string).mul(web3.LAMPORTS_PER_SOL).toNumber()
   );
   if (data.dir == "in") {
-    return encodedTx;
+    return encodedTx.encodedSignature;
   }
-  const signature = await connection.sendEncodedTransaction(encodedTx);
+  const signature = await connection.sendEncodedTransaction(encodedTx.encodedSignature);
   const res = await connection.confirmTransaction(signature);
   if (!res.value.err) {
     return signature;
@@ -376,9 +376,9 @@ async function nftTransfer(data: ItransferData) {
     new web3.PublicKey(data.toAddress)
   );
   if (data.dir == "in") {
-    return encodedTx;
+    return encodedTx.encodedSignature;
   }
-  const signature = await connection.sendEncodedTransaction(encodedTx);
+  const signature = await connection.sendEncodedTransaction(encodedTx.encodedSignature);
   const res = await connection.confirmTransaction(signature);
   if (!res.value.err) {
     return signature;
@@ -399,9 +399,9 @@ async function splTransfer(data: ItransferData) {
     )
   );
   if (data.dir == "in") {
-    return encodedTx;
+    return encodedTx.encodedSignature;
   }
-  const signature = await connection.sendEncodedTransaction(encodedTx);
+  const signature = await connection.sendEncodedTransaction(encodedTx.encodedSignature);
   const res = await connection.confirmTransaction(signature);
   if (!res.value.err) {
     return signature;
