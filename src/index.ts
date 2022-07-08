@@ -151,6 +151,12 @@ function getMnemonicWordList() {
  * @param mnemonic mnemonic string
  */
 export function createdAccount(mnemonic: string) {
+
+  const valid =  bip39.validateMnemonic(mnemonic);
+  if(!valid){
+    callMobileMethod("onCreateAccountFailed",{err: 'err mnemonic'});
+    return;
+  }
   // First get the seed according to the mnemonic
   const seed = bip39.mnemonicToSeedSync(mnemonic);
   const derivedSeed = ed25519.derivePath(derivePath, seed.toString("hex")).key;
