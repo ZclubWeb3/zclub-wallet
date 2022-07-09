@@ -1,13 +1,16 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
+const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = {
-  mode:'development',
-  entry: './src/index.ts',
+  mode: 'development',//'production',
+  entry: {
+    bundle:'./src/index.ts'
+  },
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'bundle.js',
+    //filename: 'bundle.js',
   },
   module: {
     rules: [
@@ -36,6 +39,16 @@ module.exports = {
       new webpack.ProvidePlugin({
         Buffer: ['buffer', 'Buffer'],
       }),
+      new webpack.IgnorePlugin({
+        checkResource(resource) {
+          return /.*\/wordlists\/(?!english).*\.json/.test(resource)
+        }
+      }),
+      // new CopyPlugin({
+      //   patterns: [
+      //     { from: path.resolve(__dirname,'node_modules/@solana/web3.js/lib/index.iife.js'), to: path.resolve(__dirname,'dist/web3.js') },
+      //   ],
+      // }),
     ],
   resolve:{
       fallback:{
@@ -47,4 +60,11 @@ module.exports = {
         "assert": require.resolve("assert/")
       }
   },
+  optimization: {
+    minimize: false,
+  },
+  devtool: "source-map"
+  // externals:{
+  //   '@solana/web3.js':'solanaWeb3'
+  // }
 }
