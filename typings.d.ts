@@ -16,11 +16,12 @@ interface Window {
     mnemonics: string;
     coin: string;
   };
+  validateMnemonic:(mnemonic: string)=> void;
   createdAccount: (mnemonic: any) => {
     address: string;
     coin: string;
     private_key: string;
-  };
+  } | undefined;
   importAccount: (privateKey: any) => {
     address: string;
     coin: string;
