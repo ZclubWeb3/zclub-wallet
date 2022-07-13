@@ -36,6 +36,13 @@ This project is used for mobile hybrid solana wallet development, providing func
     */
   ```
 
+- validateMnemonic
+  > validateMnemonic
+
+  ```js
+    validateMnemonic(mnemonics);
+  ```
+
 - createdAccount
   > Generate account by mnemonic
 

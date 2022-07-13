@@ -146,6 +146,21 @@ function getMnemonicWordList() {
 }
 
 /**
+ * @desc validate mnemonic
+ * @param mnemonic 
+ */
+
+export function validateMnemonic(mnemonic:string){
+  try{
+    bip39.mnemonicToEntropy(mnemonic);
+  }catch(e:any){
+    callMobileMethod("onValidateMnemonicFailed",{error: e.message});
+    return;
+  }
+  callMobileMethod("onValidateMnemonic",{});
+}
+
+/**
  * @desc Create wallet user by mnemonic
  *
  * @param mnemonic mnemonic string
@@ -154,7 +169,7 @@ export function createdAccount(mnemonic: string) {
 
   const valid =  bip39.validateMnemonic(mnemonic);
   if(!valid){
-    callMobileMethod("onCreateAccountFailed",{err: 'err mnemonic'});
+    callMobileMethod("onCreateAccountFailed",{error: 'err mnemonic'});
     return;
   }
   // First get the seed according to the mnemonic
@@ -206,6 +221,7 @@ export function importAccount(privateKey: string) {
  * */
 let connection = new web3.Connection(CONNECT_NETWORK, "confirmed");
 let owner;
+let clientSubscriptionId:number[] = [];
 export async function initWallet(privateKey: string, urls: string) {
   if (urls) {
     connection = new web3.Connection(urls, "confirmed");
@@ -221,16 +237,20 @@ export async function initWallet(privateKey: string, urls: string) {
       programId: splToken.TOKEN_PROGRAM_ID,
     }
   );
-  connection.onAccountChange(owner.publicKey, async (...args) => {
+  clientSubscriptionId.forEach((val)=>{
+    connection.removeAccountChangeListener(val);
+  })
+  clientSubscriptionId = [];
+  clientSubscriptionId.push(connection.onAccountChange(owner.publicKey, async (...args) => {
     const info = await _getCoinList();
     callMobileMethod("onWalletAssetChanged", info);
-  });
+  }));
 
   _res.value.map((item) => {
-    connection.onAccountChange(item.pubkey, async (...args) => {
+    clientSubscriptionId.push(connection.onAccountChange(item.pubkey, async (...args) => {
       const info = await _getCoinList();
       callMobileMethod("onWalletAssetChanged", info);
-    });
+    }));
   });
 
   // connection.onLogs(owner.publicKey,(...args)=>{
@@ -892,22 +912,6 @@ export async function signTransferToSpending(
     amount: amount,
     dir: "in",
   });
-  fetch("https://api.devnet.solana.com/", {
-    headers: {
-      accept: "*/*",
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      method: "sendTransaction",
-      jsonrpc: "2.0",
-      params: [
-        window.atob(res.transaction_sign),
-        { encoding: "base64", preflightCommitment: "confirmed" },
-      ],
-      id: "4567d9ac-31b5-414a-8bc5-7dfc2a8f1c7d",
-    }),
-    method: "POST",
-  });
   if (res.error) {
     callMobileMethod("onSignTransferToSpendingFailed", res);
   } else {
@@ -1053,6 +1057,7 @@ window.connection = connection;
 window.Orca = Orca;
 window.Decimal = Decimal;
 window.createdMnemonic = createdMnemonic;
+window.validateMnemonic = validateMnemonic;
 window.createdAccount = createdAccount;
 window.importAccount = importAccount;
 window.transfer = transfer;
